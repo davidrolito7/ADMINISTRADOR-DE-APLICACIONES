@@ -183,6 +183,33 @@ class AdminPanelProvider extends PanelProvider
                     : ''
             )
 
+            // Filament recuerda en localStorage los grupos que el usuario expande;
+            // se fuerza que "Configuración" inicie colapsado en cada carga de página.
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn(): string => Blade::render(<<<'HTML'
+            <script>
+                (() => {
+                    const group = @js('Configuración');
+
+                    try {
+                        let groups = JSON.parse(localStorage.getItem('collapsedGroups'));
+
+                        if (! Array.isArray(groups)) {
+                            groups = [];
+                        }
+
+                        if (! groups.includes(group)) {
+                            groups.push(group);
+                        }
+
+                        localStorage.setItem('collapsedGroups', JSON.stringify(groups));
+                    } catch (e) {}
+                })();
+            </script>
+        HTML)
+            )
+
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
